@@ -50,29 +50,26 @@ activity1 <- activity %>% group_by(date) %>% summarise(totsteps = sum(steps))
 we estimate that average number of steps taken by day is *10766.19* and the median is *10765.00* as shown below 
 
 ```r
-mean(activity1$totsteps, na.rm = TRUE)
+stepsmean <- mean(activity1$totsteps, na.rm = TRUE)
+stepsmedian <- median(activity1$totsteps, na.rm = TRUE)
+ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+names(ms) <- c("mean","meadian")
+print(ms)
 ```
 
 ```
-## [1] 10766.19
+##       mean    meadian 
+## "10766.19" "10765.00"
 ```
-
-```r
-median(activity1$totsteps, na.rm = TRUE)
-```
-
-```
-## [1] 10765
-```
-with an acompanying distribution of frecuencas -after removing NA values- as shwon by bellow graph  
+with an acompanying distribution of frecuencas -after removing NA values- as shwon by bellow graph (note that mean and median by being almost the same will be overlaped) 
 
 ```r
-hist(activity1$totsteps[!is.na(activity1$totsteps)], 
-     main = "Daily Steps Histogram", 
-     xlab = "Total daily Steps taken",
-     col = "peachpuff")
-rug(activity1$totsteps)
-abline(v = mean(activity1$totsteps, na.rm = TRUE),lwd = 2, col = "blue")
+ggplot(activity1[!is.na(activity1$totsteps),], aes(totsteps)) + 
+    geom_histogram(color = 1, bins = 5) + 
+    geom_rug() + theme_bw() + 
+    labs(title = "Daily Steps Histogram", x="Total daily Steps taken", y="Frequency") + 
+    geom_vline(xintercept = mean(activity1$totsteps, na.rm = TRUE),color = "Blue") + 
+    geom_vline(xintercept = median(activity1$totsteps, na.rm = TRUE),color = "Green")  
 ```
 
 ![](PA1_template_files/figure-html/stepshist-1.png)<!-- -->
@@ -83,11 +80,11 @@ Across all 5 minute measurements taken per day, the graph that follows shows the
 
 ```r
 activity2 <- activity %>% group_by(interval) %>% summarise(totsteps = mean(steps, na.rm = TRUE))
-plot(activity2$interval, activity2$totsteps, 
-     type = "l", 
-     main = "Average activity per Day", 
-     xlab = "5 minutes Interval", ylab = "Average Steps Count", xaxt = "n")
-axis(side = 1, activity2$interval, labels=sprintf("%00i", activity2$interval), tick = FALSE)
+ggplot(data = activity2, aes(x = interval, y = totsteps)) +
+    geom_line(size = 1,color = "Blue") + 
+    scale_x_continuous(limits = c(0,2355), breaks = seq(100,2300,200))  +
+    labs(title = "Average activity per Day", x="5 minutes intervals", y="Average Steps Taken") + 
+    theme_bw()
 ```
 
 ![](PA1_template_files/figure-html/stepspattern-1.png)<!-- -->
@@ -108,7 +105,10 @@ To avoid te issues, we will complete the missing data (NA values) with the *mean
 
 
 ```r
-activity3 <- activity %>% group_by(interval) %>% summarise(commonsteps = mean(steps, na.rm = TRUE))
+activity3 <- activity %>% 
+    group_by(interval) %>% 
+    summarise(commonsteps = mean(steps, na.rm = TRUE))
+
 activity_isna <- activity[is.na(activity$steps),]
 for(i in 1:nrow(activity_isna)) {
     activity_isna[i,1] <- activity3[activity3$interval == activity_isna[i,3],2]
@@ -125,33 +125,28 @@ sum(is.na(activity_im$steps))
 After imputing missing data using the mean values, `median` value *shifted right* towards to match previous `mean` value  
 
 ```r
-mean((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
+stepsmean <- mean((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
+stepsmedian <- median((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
+ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+names(ms) <- c("mean","meadian")
+print(ms)
 ```
 
 ```
-## [1] 10766.19
-```
-
-```r
-median((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
-```
-
-```
-## [1] 10766.19
+##       mean    meadian 
+## "10766.19" "10766.19"
 ```
 
 ```r
-hist((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps, 
-     main = "Daily Steps Histogram", 
-     xlab = "Total daily Steps taken",
-     col = "peachpuff")
-rug((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
-abline(v = mean((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps, na.rm = TRUE),
-       lwd = 2, col = "blue")
+ggplot((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps))), aes(totsteps)) + 
+    geom_histogram(color = 1, bins = 5) + 
+    geom_rug() + theme_bw() + 
+    labs(title = "Daily Steps Histogram", x="Total daily Steps taken", y="Frequency") + 
+    geom_vline(xintercept = stepsmean,color = "Blue") + 
+    geom_vline(xintercept = stepsmedian,color = "Green")  
 ```
 
 ![](PA1_template_files/figure-html/stepsimputed-1.png)<!-- -->
-
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ***
@@ -162,11 +157,15 @@ Upon classification of observations between working days and weekends and after 
 activity_im <- activity_im %>% 
                 mutate(weekendlabel = as.factor(
                     if_else(weekdays(as.POSIXct(activity_im$date)) %in% c("Saturday","Sunday"),
-                            "weekend","weekday")))
-activity_im <- activity_im %>% 
-                group_by(weekendlabel, interval) %>% summarise(totsteps = mean(steps, na.rm = TRUE))
-xyplot(activity_im$totsteps ~ activity_im$interval | activity_im$weekendlabel, 
-       type = "l", xlab = "5 min Intervals (24h format)", ylab = "Steps average")
+                            "weekend","weekday"))) %>% 
+                group_by(weekendlabel, interval) %>% 
+                summarise(totsteps = mean(steps, na.rm = TRUE))
+
+ggplot(data = activity_im, aes(x = interval, y = totsteps)) +
+    geom_line(size = 1) + 
+    scale_x_continuous(limits = c(0,2355), breaks = seq(100,2300,200))  +
+    labs(title = "Average activity per Day", x="5 minutes intervals", y="Average Steps Taken") + 
+    theme_bw() + facet_grid(weekendlabel ~ . )
 ```
 
 ![](PA1_template_files/figure-html/daytypepattern-1.png)<!-- -->
