@@ -1,5 +1,4 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
@@ -10,6 +9,8 @@ library(dplyr)
 library(ggplot2)
 #knitr::opts_chunk$set(cache = TRUE)
 ```
+
+# Reproducible Research (Peer Assesment)  
 
 ## Loading and preprocessing the data
 ***

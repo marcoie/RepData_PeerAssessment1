@@ -1,11 +1,12 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
 ---
 
 
+
+# Reproducible Research (Peer Assesment)  
 
 ## Loading and preprocessing the data
 ***
