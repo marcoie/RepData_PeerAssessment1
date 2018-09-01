@@ -51,14 +51,14 @@ we estimate that average number of steps taken by day is *10766.19* and the medi
 ```r
 stepsmean <- mean(activity1$totsteps, na.rm = TRUE)
 stepsmedian <- median(activity1$totsteps, na.rm = TRUE)
-ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+ms <- c(stepsmean, stepsmedian)
 names(ms) <- c("mean","meadian")
 print(ms)
 ```
 
 ```
-##       mean    meadian 
-## "10766.19" "10765.00"
+##     mean  meadian 
+## 10766.19 10765.00
 ```
 with an acompanying distribution of frecuencas -after removing NA values- as shwon by bellow graph (note that mean and median by being almost the same will be overlaped) 
 
@@ -87,6 +87,16 @@ ggplot(data = activity2, aes(x = interval, y = totsteps)) +
 ```
 
 ![](PA1_template_files/figure-html/stepspattern-1.png)<!-- -->
+Across all of the time series above, the 5 minutes interval with higher steps average is  
+
+```r
+as.data.frame(activity2[activity2$totsteps == max(activity2$totsteps),])
+```
+
+```
+##   interval totsteps
+## 1      835 206.1698
+```
 
 ## Imputing missing values
 ***
@@ -126,14 +136,14 @@ After imputing missing data using the mean values, `median` value *shifted right
 ```r
 stepsmean <- mean((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
 stepsmedian <- median((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
-ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+ms <- c(stepsmean, stepsmedian)
 names(ms) <- c("mean","meadian")
 print(ms)
 ```
 
 ```
-##       mean    meadian 
-## "10766.19" "10766.19"
+##     mean  meadian 
+## 10766.19 10766.19
 ```
 
 ```r

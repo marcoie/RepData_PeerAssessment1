@@ -31,7 +31,7 @@ we estimate that average number of steps taken by day is *`r sprintf("%.2f", mea
 ```{r stepsstatistics}
 stepsmean <- mean(activity1$totsteps, na.rm = TRUE)
 stepsmedian <- median(activity1$totsteps, na.rm = TRUE)
-ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+ms <- c(stepsmean, stepsmedian)
 names(ms) <- c("mean","meadian")
 print(ms)
 ```
@@ -55,6 +55,10 @@ ggplot(data = activity2, aes(x = interval, y = totsteps)) +
     scale_x_continuous(limits = c(0,2355), breaks = seq(100,2300,200))  +
     labs(title = "Average activity per Day", x="5 minutes intervals", y="Average Steps Taken") + 
     theme_bw()
+```
+Across all of the time series above, the 5 minutes interval with higher steps average is  
+```{r}
+as.data.frame(activity2[activity2$totsteps == max(activity2$totsteps),])
 ```
 
 ## Imputing missing values
@@ -84,7 +88,7 @@ After imputing missing data using the mean values, `median` value *shifted right
 ```{r stepsimputed}
 stepsmean <- mean((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
 stepsmedian <- median((activity_im %>% group_by(date) %>% summarise(totsteps = sum(steps)))$totsteps)
-ms <- c(sprintf("%.2f", stepsmean),sprintf("%.2f", stepsmedian))
+ms <- c(stepsmean, stepsmedian)
 names(ms) <- c("mean","meadian")
 print(ms)
 
